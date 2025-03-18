@@ -1,0 +1,50 @@
+name: CI/CD Pipeline 
+
+
+on:
+  push:
+    branches:
+      - main
+
+# env:
+#   CONTAINER_NAME: utilisateur/labisi2025
+#   IMAGE_NAME: utilisateur/labisi2025:latest
+
+#Build de l'applicationet push de l'image sur le Registry Docker Hub
+jobs:
+  build:
+    name: continuous_integration
+    runs-on: ubuntu-latest
+    environment: WORKFLOW
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+    
+    - name: Build Docker image
+      run: docker build -t ${{ vars.IMAGE_NAME }} .
+      
+    - name: Push Docker image to Docker Hub
+      run: docker push ${{ vars.IMAGE_NAME }}
+
+#Déploiement sur l'instance AWS EC2
+  deploy:
+    name: continuous_deployment
+    runs-on: self-hosted
+    environment: WORKFLOW
+  
+    steps:
+    - name: Se connecter sur Docker Hub
+      run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+    - name: Arrêt du conteneur existant
+      run: docker stop ${{ vars.CONTAINER_NAME }} || true
+
+    - name: Suppression de l'image existante
+      run: docker rmi ${{ vars.IMAGE_NAME }} || true
+
+    - name: déploiement sur EC2
+      run: docker run -d -p 80:80 --name ${{ vars.CONTAINER_NAME }} ${{ vars.IMAGE_NAME }}
