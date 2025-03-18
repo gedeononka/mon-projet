@@ -7,7 +7,7 @@ on:
       - main
 
 # env:
-#   CONTAINER_NAME: gedeon4/labisi2025
+#   CONTAINER_NAME:labisi2025
 #   IMAGE_NAME: dockergedeon4/labisi2025:latest
 
 #Build de l'applicationet push de l'image sur le Registry Docker Hub
