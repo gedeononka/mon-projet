@@ -2,7 +2,7 @@
 
 # Variables
 CONTAINER_NAME="labisi2025"
-IMAGE_NAME="dockergedeon4/labisi2025:latest"
+IMAGE_NAME="gedeon4/labisi2025:latest"
 
 # Arrêt du conteneur existant
 sudo docker stop $CONTAINER_NAME || true
