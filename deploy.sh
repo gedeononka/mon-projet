@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Variables
-CONTAINER_NAME=" dockergedeon4/labisi2025"
+CONTAINER_NAME="labisi2025"
 IMAGE_NAME=" dockergedeon4/labisi2025:latest"
 
 # Arrêt du conteneur existant
