@@ -1,16 +1,14 @@
-name: CI/CD Pipeline 
-
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
 
-# env:
-#   CONTAINER_NAME:labisi2025
-#   IMAGE_NAME: dockergedeon4/labisi2025:latest
+env:
+  CONTAINER_NAME: labisi2025
+  IMAGE_NAME: dockergedeon4/labisi2025:latest
 
-#Build de l'applicationet push de l'image sur le Registry Docker Hub
 jobs:
   build:
     name: continuous_integration
@@ -25,26 +23,31 @@ jobs:
       run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
     
     - name: Build Docker image
-      run: docker build -t ${{ vars.IMAGE_NAME }} .
+      run: docker build -t ${{ env.IMAGE_NAME }} .
       
     - name: Push Docker image to Docker Hub
-      run: docker push ${{ vars.IMAGE_NAME }}
+      run: docker push ${{ env.IMAGE_NAME }}
 
-#Déploiement sur l'instance AWS EC2
   deploy:
     name: continuous_deployment
     runs-on: self-hosted
     environment: WORKFLOW
-  
+    needs: build  # Ajout de la dépendance
+
     steps:
     - name: Se connecter sur Docker Hub
       run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
-    - name: Arrêt du conteneur existant
-      run: docker stop ${{ vars.CONTAINER_NAME }} || true
+    - name: Arrêt et suppression du conteneur existant
+      run: |
+        docker stop ${{ env.CONTAINER_NAME }} || true
+        docker rm ${{ env.CONTAINER_NAME }} || true
 
     - name: Suppression de l'image existante
-      run: docker rmi ${{ vars.IMAGE_NAME }} || true
+      run: docker rmi ${{ env.IMAGE_NAME }} || true
 
-    - name: déploiement sur EC2
-      run: docker run -d -p 80:80 --name ${{ vars.CONTAINER_NAME }} ${{ vars.IMAGE_NAME }}
+    - name: Tirer la nouvelle image
+      run: docker pull ${{ env.IMAGE_NAME }}
+
+    - name: Déploiement sur EC2
+      run: docker run -d -p 80:80 --name ${{ env.CONTAINER_NAME }} ${{ env.IMAGE_NAME }}
